@@ -351,7 +351,7 @@ HTML_TEMPLATE = """
         .btn-press:active { transform: scale(0.98); }
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
+
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
@@ -360,7 +360,7 @@ HTML_TEMPLATE = """
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%; height: 4px; cursor: pointer; background: #4b5563; border-radius: 2px;
         }
-        
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #2d3748; }
         ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 4px; }
@@ -368,7 +368,7 @@ HTML_TEMPLATE = """
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
     <div class="w-full max-w-md bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700 fade-in flex flex-col max-h-[90vh]">
-        
+
         <!-- Header -->
         <div class="bg-gray-900 p-4 text-center border-b border-gray-700 flex justify-between items-center shrink-0 z-10">
             <h1 class="text-xl font-bold text-blue-400 mx-auto">
@@ -380,11 +380,11 @@ HTML_TEMPLATE = """
         </div>
 
         <div class="p-6 overflow-y-auto grow">
-            
+
             <!-- PASO 1: CONFIGURACIÓN -->
             {% if step == 'setup' %}
             <form action="/setup" method="POST" class="space-y-6">
-                
+
                 <!-- Selector de MODO -->
                 <div class="bg-gray-700/50 p-3 rounded-xl border border-gray-600">
                     <label class="block text-gray-400 mb-2 font-bold text-xs uppercase tracking-widest">Modo de Juego</label>
@@ -444,7 +444,7 @@ HTML_TEMPLATE = """
                              <button type="button" onclick="removePlayer(this)" class="text-red-400 hover:text-red-300 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
-                    
+
                     <button type="button" onclick="addPlayerField()" class="mt-2 text-xs text-blue-400 hover:text-blue-300 font-bold w-full border border-dashed border-gray-600 p-2 rounded hover:bg-gray-700 transition">
                         <i class="fas fa-plus-circle"></i> Agregar Jugador
                     </button>
@@ -455,7 +455,7 @@ HTML_TEMPLATE = """
                     JUGAR
                 </button>
             </form>
-            
+
             <div class="mt-6 pt-4 border-t border-gray-700 text-center">
                 <a href="/dictionary" class="text-gray-400 hover:text-white text-sm font-semibold transition">
                     <i class="fas fa-lock mr-1"></i> Ver todas las palabras (Admin)
@@ -478,11 +478,11 @@ HTML_TEMPLATE = """
                         select.appendChild(opt);
                     });
                 }
-                
+
                 function addPlayerField() {
                     const container = document.getElementById('players-container');
                     const count = container.children.length + 1;
-                    
+
                     const div = document.createElement('div');
                     div.className = 'flex gap-2 items-center fade-in';
                     div.innerHTML = `
@@ -515,11 +515,11 @@ HTML_TEMPLATE = """
                 <div class="text-5xl text-red-500"><i class="fas fa-lock"></i></div>
                 <h2 class="text-2xl font-bold text-white">Zona Protegida</h2>
                 <p class="text-gray-400">Ingresa la clave para ver las palabras.</p>
-                
+
                 <form action="/dictionary/login" method="POST" class="space-y-4">
                     <input type="password" name="password" placeholder="Clave de Admin" 
                            class="bg-gray-700 p-4 rounded-xl text-center text-white text-xl w-full border border-gray-600 focus:border-red-500 outline-none">
-                    
+
                     {% if error %}
                     <p class="text-red-400 text-sm font-bold">{{ error }}</p>
                     {% endif %}
@@ -528,7 +528,7 @@ HTML_TEMPLATE = """
                         DESBLOQUEAR
                     </button>
                 </form>
-                
+
                 <a href="/" class="block text-gray-500 mt-4 text-sm">Cancelar</a>
             </div>
             {% endif %}
@@ -542,7 +542,7 @@ HTML_TEMPLATE = """
                         <i class="fas fa-arrow-left"></i> Volver
                     </a>
                 </div>
-                
+
                 <div class="bg-green-900/30 border border-green-500/30 p-2 rounded text-center text-green-300 text-xs mb-4">
                     <i class="fas fa-unlock mr-1"></i> Acceso concedido
                 </div>
@@ -611,15 +611,15 @@ HTML_TEMPLATE = """
                 <div class="text-gray-400 text-xs uppercase tracking-widest">Rol de {{ current_name }}</div>
 
                 <div class="p-8 rounded-2xl border-4 {{ 'border-red-500 bg-red-900/20' if is_impostor else 'border-green-500 bg-green-900/20' }} relative overflow-hidden shadow-2xl">
-                    
+
                     {% if is_impostor %}
                         <div class="absolute -right-6 -top-6 text-9xl text-red-500/10 rotate-12"><i class="fas fa-spider"></i></div>
-                        
+
                         <i class="fas fa-mask text-7xl text-red-500 mb-4 relative z-10 drop-shadow-lg"></i>
                         <h2 class="text-4xl font-black text-red-500 mb-2 uppercase relative z-10 tracking-tighter">IMPOSTOR</h2>
                         <p class="text-gray-300 relative z-10 font-bold">¡Disimula!</p>
                         <p class="text-sm text-red-300 mt-2 relative z-10">No sabes la palabra.</p>
-                        
+
                         {% if num_impostors > 1 %}
                         <div class="mt-4 bg-red-900/50 p-2 rounded border border-red-500/30 text-xs text-red-200 animate-pulse">
                              ⚠️ Hay otro impostor...
@@ -631,7 +631,7 @@ HTML_TEMPLATE = """
 
                         <i class="fas fa-user-check text-7xl text-green-500 mb-4 relative z-10 drop-shadow-lg"></i>
                         <h2 class="text-2xl font-bold text-green-400 mb-2 relative z-10 uppercase">Ciudadano</h2>
-                        
+
                         <div class="bg-gray-900/80 p-4 rounded-xl mt-6 border border-green-500/30 relative z-10 shadow-inner">
                             <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Palabra Secreta</p>
                             <p class="text-2xl font-black text-white tracking-wide break-words leading-none">{{ word }}</p>
@@ -658,7 +658,7 @@ HTML_TEMPLATE = """
                 <h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-blue-400 to-red-400 drop-shadow-sm">
                     ¡A DEBATIR!
                 </h2>
-                
+
                 <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600">
                     <h3 class="text-gray-400 text-xs uppercase mb-3 font-bold">Jugadores</h3>
                     <div class="flex flex-wrap gap-2 justify-center">
@@ -697,11 +697,11 @@ HTML_TEMPLATE = """
             {% if step == 'result' %}
             <div class="text-center space-y-8">
                 <h2 class="text-3xl font-bold text-white mb-2">La Verdad</h2>
-                
+
                 <div class="bg-gradient-to-b from-gray-700 to-gray-800 p-8 rounded-3xl border border-gray-600 shadow-2xl relative overflow-hidden">
-                    
+
                     <p class="text-gray-400 text-xs mb-4 uppercase tracking-widest font-bold">Los Impostores eran</p>
-                    
+
                     {% for name in impostor_names %}
                         <div class="text-4xl font-black text-red-500 mb-2 drop-shadow-md animate-pulse">{{ name }}</div>
                     {% endfor %}
@@ -722,3 +722,129 @@ HTML_TEMPLATE = """
     </div>
 </body>
 </html>
+"""
+
+@app.route('/')
+def home():
+    session.clear()
+    return render_template_string(HTML_TEMPLATE, step='setup', 
+                                  cat_ecu=list(DATA_ECUADOR.keys()),
+                                  cat_norm=list(DATA_NORMAL.keys()))
+
+@app.route('/dictionary')
+def dictionary():
+    # Verificar si ya metió la clave
+    if session.get('dict_access'):
+        return render_template_string(HTML_TEMPLATE, step='dictionary', 
+                                      data_ecu=DATA_ECUADOR, 
+                                      data_norm=DATA_NORMAL)
+    else:
+        # Si no, mostrar pantalla de login
+        return render_template_string(HTML_TEMPLATE, step='dict_auth')
+
+@app.route('/dictionary/login', methods=['POST'])
+def dictionary_login():
+    password = request.form.get('password')
+    if password == DICT_PASSWORD:
+        session['dict_access'] = True
+        return redirect(url_for('dictionary'))
+    else:
+        return render_template_string(HTML_TEMPLATE, step='dict_auth', error="Clave Incorrecta ñaño")
+
+@app.route('/setup', methods=['POST'])
+def setup():
+    # --- LOGICA DE NOMBRES POR DEFECTO ---
+    raw_names = request.form.getlist('player_name')
+    players = []
+    
+    # Recorremos cada input. Si está vacío, asignamos "Jugador X"
+    for i, name in enumerate(raw_names):
+        clean_name = name.strip()
+        if not clean_name:
+            clean_name = f"Jugador {i + 1}"
+        players.append(clean_name)
+    
+    # Filtramos por si acaso quedara algo raro, pero con la lógica de arriba
+    # siempre tendremos nombres. Solo aseguramos mínimo 3.
+    if len(players) < 3:
+        # Si por alguna razón fallara, redirigimos
+        return redirect(url_for('home'))
+
+    # Configuración del juego
+    category = request.form.get('category')
+    words = ALL_DATA.get(category, ["Error"])
+    secret_word = random.choice(words)
+    
+    prob_double = int(request.form.get('impostor_prob', 0))
+    num_impostors = 1
+    
+    if len(players) >= 5:
+        chance = random.randint(1, 100)
+        if chance <= prob_double:
+            num_impostors = 2
+    
+    impostor_indices = random.sample(range(len(players)), num_impostors)
+    
+    session['players'] = players
+    session['category'] = category
+    session['secret_word'] = secret_word
+    session['impostor_indices'] = impostor_indices
+    session['current_idx'] = 0
+    
+    return redirect(url_for('reveal_wait'))
+
+@app.route('/reveal/wait')
+def reveal_wait():
+    current_idx = session.get('current_idx')
+    players = session.get('players')
+    
+    if current_idx >= len(players):
+        return redirect(url_for('game_phase'))
+        
+    return render_template_string(HTML_TEMPLATE, 
+                                  step='wait', 
+                                  current_name=players[current_idx])
+
+@app.route('/reveal/card')
+def reveal_card():
+    current_idx = session.get('current_idx')
+    impostor_indices = session.get('impostor_indices')
+    players = session.get('players')
+    
+    is_impostor = (current_idx in impostor_indices)
+    is_last = (current_idx == len(players) - 1)
+    
+    return render_template_string(HTML_TEMPLATE, 
+                                  step='card', 
+                                  current_name=players[current_idx],
+                                  is_impostor=is_impostor,
+                                  num_impostors=len(impostor_indices),
+                                  word=session.get('secret_word'),
+                                  is_last=is_last)
+
+@app.route('/next_player')
+def next_player():
+    session['current_idx'] += 1
+    return redirect(url_for('reveal_wait'))
+
+@app.route('/game')
+def game_phase():
+    return render_template_string(HTML_TEMPLATE, 
+                                  step='game',
+                                  players=session.get('players'),
+                                  category=session.get('category'))
+
+@app.route('/result')
+def result():
+    players = session.get('players')
+    impostor_indices = session.get('impostor_indices')
+    impostor_names = [players[i] for i in impostor_indices]
+    
+    return render_template_string(HTML_TEMPLATE, 
+                                  step='result', 
+                                  impostor_names=impostor_names, 
+                                  word=session.get('secret_word'))
+
+if __name__ == '__main__':
+    print("Iniciando juego en: http://127.0.0.1:5001")
+    app.run(debug=True, port=5001)
