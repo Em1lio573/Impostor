@@ -3,6 +3,7 @@ import random
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta_ecuador_master_mega_123"
+DICT_PASSWORD = "1234"  # <--- AQUÍ PUEDES CAMBIAR LA CLAVE
 
 # --- DATOS DEL JUEGO (BASE DE DATOS AMPLIADA) ---
 DATA_ECUADOR = {
@@ -134,7 +135,7 @@ HTML_TEMPLATE = """
             <h1 class="text-xl font-bold text-blue-400 mx-auto">
                 <i class="fas fa-user-secret mr-2"></i>El Impostor
             </h1>
-            {% if step != 'setup' and step != 'dictionary' %}
+            {% if step != 'setup' and step != 'dict_auth' %}
             <a href="/" class="text-gray-500 hover:text-white text-xs"><i class="fas fa-times"></i> Salir</a>
             {% endif %}
         </div>
@@ -190,7 +191,7 @@ HTML_TEMPLATE = """
                         <i class="fas fa-users mr-1"></i> Jugadores
                     </label>
                     <div id="players-container" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        <!-- Campos Iniciales (Ahora dinámicos para poder borrarlos si quieres) -->
+                        <!-- Campos Iniciales -->
                         <div class="flex gap-2 items-center">
                              <input type="text" name="player_name" placeholder="Jugador 1 (Opcional)" class="w-full bg-gray-700 p-3 rounded-lg border border-gray-600 focus:border-blue-500 outline-none text-sm">
                              <button type="button" onclick="removePlayer(this)" class="text-red-400 hover:text-red-300 p-2"><i class="fas fa-trash"></i></button>
@@ -218,7 +219,7 @@ HTML_TEMPLATE = """
             
             <div class="mt-6 pt-4 border-t border-gray-700 text-center">
                 <a href="/dictionary" class="text-gray-400 hover:text-white text-sm font-semibold transition">
-                    <i class="fas fa-book mr-1"></i> Ver todas las palabras
+                    <i class="fas fa-lock mr-1"></i> Ver todas las palabras (Admin)
                 </a>
             </div>
 
@@ -269,6 +270,30 @@ HTML_TEMPLATE = """
             </script>
             {% endif %}
 
+            <!-- AUTH DICCIONARIO (NUEVO) -->
+            {% if step == 'dict_auth' %}
+            <div class="text-center space-y-6 pt-10">
+                <div class="text-5xl text-red-500"><i class="fas fa-lock"></i></div>
+                <h2 class="text-2xl font-bold text-white">Zona Protegida</h2>
+                <p class="text-gray-400">Ingresa la clave para ver las palabras.</p>
+                
+                <form action="/dictionary/login" method="POST" class="space-y-4">
+                    <input type="password" name="password" placeholder="Clave de Admin" 
+                           class="bg-gray-700 p-4 rounded-xl text-center text-white text-xl w-full border border-gray-600 focus:border-red-500 outline-none">
+                    
+                    {% if error %}
+                    <p class="text-red-400 text-sm font-bold">{{ error }}</p>
+                    {% endif %}
+
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl transition btn-press">
+                        DESBLOQUEAR
+                    </button>
+                </form>
+                
+                <a href="/" class="block text-gray-500 mt-4 text-sm">Cancelar</a>
+            </div>
+            {% endif %}
+
             <!-- DICCIONARIO -->
             {% if step == 'dictionary' %}
             <div class="space-y-6">
@@ -278,6 +303,11 @@ HTML_TEMPLATE = """
                         <i class="fas fa-arrow-left"></i> Volver
                     </a>
                 </div>
+                
+                <div class="bg-green-900/30 border border-green-500/30 p-2 rounded text-center text-green-300 text-xs mb-4">
+                    <i class="fas fa-unlock mr-1"></i> Acceso concedido
+                </div>
+
                 <div>
                     <h3 class="text-yellow-500 font-bold mb-3 border-b border-gray-700 pb-1">🇪🇨 Modo Ecuador</h3>
                     <div class="space-y-3">
@@ -307,11 +337,6 @@ HTML_TEMPLATE = """
                         </div>
                         {% endfor %}
                     </div>
-                </div>
-                <div class="text-center pt-4">
-                    <a href="/" class="block w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition btn-press">
-                        Ir al Juego
-                    </a>
                 </div>
             </div>
             {% endif %}
@@ -460,9 +485,23 @@ def home():
 
 @app.route('/dictionary')
 def dictionary():
-    return render_template_string(HTML_TEMPLATE, step='dictionary', 
-                                  data_ecu=DATA_ECUADOR, 
-                                  data_norm=DATA_NORMAL)
+    # Verificar si ya metió la clave
+    if session.get('dict_access'):
+        return render_template_string(HTML_TEMPLATE, step='dictionary', 
+                                      data_ecu=DATA_ECUADOR, 
+                                      data_norm=DATA_NORMAL)
+    else:
+        # Si no, mostrar pantalla de login
+        return render_template_string(HTML_TEMPLATE, step='dict_auth')
+
+@app.route('/dictionary/login', methods=['POST'])
+def dictionary_login():
+    password = request.form.get('password')
+    if password == DICT_PASSWORD:
+        session['dict_access'] = True
+        return redirect(url_for('dictionary'))
+    else:
+        return render_template_string(HTML_TEMPLATE, step='dict_auth', error="Clave Incorrecta ñaño")
 
 @app.route('/setup', methods=['POST'])
 def setup():
