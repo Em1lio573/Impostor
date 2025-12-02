@@ -3,10 +3,9 @@ import random
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta_ecuador_master_mega_123"
-DICT_PASSWORD = "admin123"
+DICT_PASSWORD = "admin1234"  # <--- CLAVE DEL DICCIONARIO
 
-# --- DATOS DEL JUEGO (PISTAS DIFÍCILES / ACERTIJOS) ---
-# Formato: ("Palabra", "Pista")
+# --- DATOS DEL JUEGO (Palabra, Pista Difícil) ---
 DATA_ECUADOR = {
     "🇪🇨 Comida Típica": [
         ("Encebollado", "Levanta muertos con yuca y albácora"),
@@ -200,7 +199,7 @@ DATA_NORMAL = {
         ("Vaca", "Fábrica de leche y cuero"),
         ("Cerdo", "Inteligente, rosado y de granja"),
         ("Gallina", "Productora de huevos"),
-        ("Pato", "Nada, vuela y camina torpe"),
+        ("Pato", "Ave acuática que dice cuac"),
         ("Búho", "Vigilante nocturno de ojos grandes"),
         ("Murciélago", "Radar viviente que duerme colgado")
     ],
@@ -333,7 +332,7 @@ DATA_NORMAL = {
     ]
 }
 
-# Unimos todo para buscar fácil la palabra secreta
+# Unimos todo
 ALL_DATA = {**DATA_ECUADOR, **DATA_NORMAL}
 
 # --- DISEÑO HTML ---
@@ -424,6 +423,17 @@ HTML_TEMPLATE = """
                            oninput="document.getElementById('prob-val').innerText = this.value + '%'">
                 </div>
 
+                <!-- Toggle Pistas (Nuevo) -->
+                <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex items-center justify-between">
+                    <label class="text-gray-400 font-bold text-xs uppercase tracking-widest flex items-center">
+                        <i class="fas fa-lightbulb mr-2 text-yellow-500"></i> Habilitar Pistas
+                    </label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="enable_hints" value="yes" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                    </label>
+                </div>
+
                 <!-- Nombres -->
                 <div>
                     <label class="block text-gray-400 mb-2 font-bold text-sm uppercase tracking-wider">
@@ -509,7 +519,7 @@ HTML_TEMPLATE = """
             </script>
             {% endif %}
 
-            <!-- AUTH DICCIONARIO (NUEVO) -->
+            <!-- AUTH DICCIONARIO -->
             {% if step == 'dict_auth' %}
             <div class="text-center space-y-6 pt-10">
                 <div class="text-5xl text-red-500"><i class="fas fa-lock"></i></div>
@@ -620,8 +630,22 @@ HTML_TEMPLATE = """
                         <p class="text-gray-300 relative z-10 font-bold">¡Disimula!</p>
                         <p class="text-sm text-red-300 mt-2 relative z-10">No sabes la palabra.</p>
 
+                        <!-- Botón de Pista (SOLO IMPOSTOR) -->
+                        {% if enable_hints %}
+                        <div class="mt-4 pt-4 border-t border-red-500/30 relative z-10">
+                            <p class="text-xs text-red-300 mb-2">Ayuda para mentir:</p>
+                            <button onclick="document.getElementById('secret-hint').classList.toggle('hidden')" 
+                                    class="text-xs text-yellow-400 hover:text-yellow-300 font-bold focus:outline-none transition border border-yellow-500/50 px-3 py-1 rounded-full bg-yellow-900/20">
+                                <i class="fas fa-lightbulb mr-1"></i> VER PISTA
+                            </button>
+                            <p id="secret-hint" class="hidden text-sm text-yellow-200 italic mt-2 transition-all bg-black/40 p-2 rounded">
+                                {{ hint }}
+                            </p>
+                        </div>
+                        {% endif %}
+
                         {% if num_impostors > 1 %}
-                        <div class="mt-4 bg-red-900/50 p-2 rounded border border-red-500/30 text-xs text-red-200 animate-pulse">
+                        <div class="mt-4 bg-red-900/50 p-2 rounded border border-red-500/30 text-xs text-red-200 animate-pulse relative z-10">
                              ⚠️ Hay otro impostor...
                         </div>
                         {% endif %}
@@ -635,9 +659,6 @@ HTML_TEMPLATE = """
                         <div class="bg-gray-900/80 p-4 rounded-xl mt-6 border border-green-500/30 relative z-10 shadow-inner">
                             <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Palabra Secreta</p>
                             <p class="text-2xl font-black text-white tracking-wide break-words leading-none">{{ word }}</p>
-                            <div class="mt-3 pt-2 border-t border-gray-600">
-                                <p class="text-xs text-yellow-300 italic"><i class="fas fa-lightbulb mr-1"></i> Pista: {{ hint }}</p>
-                            </div>
                         </div>
                     {% endif %}
                 </div>
@@ -724,23 +745,24 @@ HTML_TEMPLATE = """
 </html>
 """
 
+
 @app.route('/')
 def home():
     session.clear()
-    return render_template_string(HTML_TEMPLATE, step='setup', 
+    return render_template_string(HTML_TEMPLATE, step='setup',
                                   cat_ecu=list(DATA_ECUADOR.keys()),
                                   cat_norm=list(DATA_NORMAL.keys()))
 
+
 @app.route('/dictionary')
 def dictionary():
-    # Verificar si ya metió la clave
     if session.get('dict_access'):
-        return render_template_string(HTML_TEMPLATE, step='dictionary', 
-                                      data_ecu=DATA_ECUADOR, 
+        return render_template_string(HTML_TEMPLATE, step='dictionary',
+                                      data_ecu=DATA_ECUADOR,
                                       data_norm=DATA_NORMAL)
     else:
-        # Si no, mostrar pantalla de login
         return render_template_string(HTML_TEMPLATE, step='dict_auth')
+
 
 @app.route('/dictionary/login', methods=['POST'])
 def dictionary_login():
@@ -751,100 +773,110 @@ def dictionary_login():
     else:
         return render_template_string(HTML_TEMPLATE, step='dict_auth', error="Clave Incorrecta ñaño")
 
+
 @app.route('/setup', methods=['POST'])
 def setup():
-    # --- LOGICA DE NOMBRES POR DEFECTO ---
+    # 1. NOMBRES POR DEFECTO
     raw_names = request.form.getlist('player_name')
     players = []
-    
-    # Recorremos cada input. Si está vacío, asignamos "Jugador X"
+
     for i, name in enumerate(raw_names):
         clean_name = name.strip()
         if not clean_name:
             clean_name = f"Jugador {i + 1}"
         players.append(clean_name)
-    
-    # Filtramos por si acaso quedara algo raro, pero con la lógica de arriba
-    # siempre tendremos nombres. Solo aseguramos mínimo 3.
+
     if len(players) < 3:
-        # Si por alguna razón fallara, redirigimos
         return redirect(url_for('home'))
 
-    # Configuración del juego
+    # 2. SELECCIÓN DE PALABRA Y PISTA
     category = request.form.get('category')
-    words = ALL_DATA.get(category, ["Error"])
-    secret_word = random.choice(words)
-    
+    # Obtenemos la lista de tuplas (palabra, pista)
+    words = ALL_DATA.get(category, [("Error", "Sin pista")])
+
+    selected_pair = random.choice(words)
+    secret_word = selected_pair[0]
+    secret_hint = selected_pair[1]
+
+    # 3. LÓGICA DE IMPOSTORES
     prob_double = int(request.form.get('impostor_prob', 0))
     num_impostors = 1
-    
+
     if len(players) >= 5:
         chance = random.randint(1, 100)
         if chance <= prob_double:
             num_impostors = 2
-    
+
     impostor_indices = random.sample(range(len(players)), num_impostors)
-    
+
     session['players'] = players
     session['category'] = category
     session['secret_word'] = secret_word
+    session['secret_hint'] = secret_hint
     session['impostor_indices'] = impostor_indices
     session['current_idx'] = 0
-    
+
     return redirect(url_for('reveal_wait'))
+
 
 @app.route('/reveal/wait')
 def reveal_wait():
     current_idx = session.get('current_idx')
     players = session.get('players')
-    
+
     if current_idx >= len(players):
         return redirect(url_for('game_phase'))
-        
-    return render_template_string(HTML_TEMPLATE, 
-                                  step='wait', 
+
+    return render_template_string(HTML_TEMPLATE,
+                                  step='wait',
                                   current_name=players[current_idx])
+
 
 @app.route('/reveal/card')
 def reveal_card():
     current_idx = session.get('current_idx')
     impostor_indices = session.get('impostor_indices')
     players = session.get('players')
-    
+
     is_impostor = (current_idx in impostor_indices)
     is_last = (current_idx == len(players) - 1)
-    
-    return render_template_string(HTML_TEMPLATE, 
-                                  step='card', 
+
+    return render_template_string(HTML_TEMPLATE,
+                                  step='card',
                                   current_name=players[current_idx],
                                   is_impostor=is_impostor,
                                   num_impostors=len(impostor_indices),
                                   word=session.get('secret_word'),
+                                  hint=session.get('secret_hint'),
                                   is_last=is_last)
+
 
 @app.route('/next_player')
 def next_player():
     session['current_idx'] += 1
     return redirect(url_for('reveal_wait'))
 
+
 @app.route('/game')
 def game_phase():
-    return render_template_string(HTML_TEMPLATE, 
+    return render_template_string(HTML_TEMPLATE,
                                   step='game',
                                   players=session.get('players'),
                                   category=session.get('category'))
+
 
 @app.route('/result')
 def result():
     players = session.get('players')
     impostor_indices = session.get('impostor_indices')
     impostor_names = [players[i] for i in impostor_indices]
-    
-    return render_template_string(HTML_TEMPLATE, 
-                                  step='result', 
-                                  impostor_names=impostor_names, 
+
+    return render_template_string(HTML_TEMPLATE,
+                                  step='result',
+                                  impostor_names=impostor_names,
                                   word=session.get('secret_word'))
 
+
 if __name__ == '__main__':
-    print("Iniciando juego en: http://127.0.0.1:5001")
+    # Usamos 5001 localmente para evitar conflictos
     app.run(debug=True, port=5001)
