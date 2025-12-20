@@ -91,7 +91,9 @@
             <h1 class="text-xl font-bold text-blue-400 mx-auto tracking-wide">
                 <i class="fas fa-user-secret mr-2"></i>El Impostor
             </h1>
-            <div class="w-8"></div>
+            <button onclick="toggleFullScreen()"
+                class="text-gray-400 hover:text-white p-2 active:bg-gray-800 rounded-full transition"><i id="fs-icon"
+                    class="fas fa-expand text-lg"></i></button>
         </div>
 
         <div class="p-5 overflow-y-auto grow relative no-scrollbar">
@@ -928,6 +930,23 @@
             };
             container.innerHTML += renderSection("🇪🇨 Modo Ecuador", DATA_ECUADOR, "text-yellow-500");
             container.innerHTML += renderSection("🌎 Modo Normal", DATA_NORMAL, "text-blue-500");
+        }
+        function toggleFullScreen() {
+            const doc = document.documentElement;
+            const icon = document.getElementById('fs-icon');
+            if (!document.fullscreenElement) {
+                doc.requestFullscreen().then(() => {
+                    icon.classList.remove('fa-expand');
+                    icon.classList.add('fa-compress');
+                }).catch(err => {
+                    alert(`Error: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    icon.classList.remove('fa-compress');
+                    icon.classList.add('fa-expand');
+                });
+            }
         }
     </script>
 </body>
