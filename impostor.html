@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Impostor: Web Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #111827;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .btn-press:active {
+            transform: scale(0.97);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Sliders Custom */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #4b5563;
+            border-radius: 3px;
+        }
+
+        /* Ocultar scrollbar pero permitir scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body
+    class="min-h-[100dvh] flex items-center justify-center p-2 bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 overflow-hidden">
+
+    <div
+        class="w-full max-w-md bg-gray-800 rounded-none sm:rounded-2xl shadow-2xl border-x sm:border border-gray-700 flex flex-col h-[100dvh] relative overflow-hidden">
+
+        <!-- Header -->
+        <div
+            class="bg-gray-900 p-4 text-center border-b border-gray-700 flex justify-between items-center shrink-0 z-20">
+            <button onclick="resetGame()"
+                class="text-gray-400 hover:text-white p-2 active:bg-gray-800 rounded-full transition"><i
+                    class="fas fa-home text-lg"></i></button>
+            <h1 class="text-xl font-bold text-blue-400 mx-auto tracking-wide">
+                <i class="fas fa-user-secret mr-2"></i>El Impostor
+            </h1>
+            <div class="w-8"></div>
+        </div>
+
+        <div class="p-5 overflow-y-auto grow relative no-scrollbar">
+
+            <!-- VISTA 1: CONFIGURACIÓN (SETUP) -->
+            <div id="view-setup" class="space-y-5 fade-in pb-4">
+
+                <!-- Selector MODO -->
+                <div class="bg-gray-700/40 p-1 rounded-xl border border-gray-600 flex text-sm font-medium">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="game_mode" value="ecu" class="peer hidden" checked
+                            onchange="updateCategories()">
+                        <div
+                            class="text-center py-3 rounded-lg peer-checked:bg-yellow-600 peer-checked:text-white text-gray-400 transition-all duration-200">
+                            🇪🇨 Ecuador
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="game_mode" value="norm" class="peer hidden"
+                            onchange="updateCategories()">
+                        <div
+                            class="text-center py-3 rounded-lg peer-checked:bg-blue-600 peer-checked:text-white text-gray-400 transition-all duration-200">
+                            🌎 Normal
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Categoría -->
+                <div>
+                    <label class="block text-blue-400 mb-2 font-bold text-sm uppercase tracking-wider ml-1">
+                        <i class="fas fa-list-ul mr-1"></i> Categoría
+                    </label>
+                    <div class="relative">
+                        <select id="category-select"
+                            class="w-full bg-gray-700 rounded-xl p-4 text-white text-base border border-gray-600 focus:border-blue-500 outline-none appearance-none font-medium">
+                            <!-- JS llena esto -->
+                        </select>
+                        <div
+                            class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-400">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración Extra: Tiempo y Modo Rápido -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-700/30 p-3 rounded-xl border border-gray-600">
+                        <label class="block text-gray-400 mb-1 font-bold text-xs uppercase">
+                            <i class="fas fa-stopwatch text-green-400"></i> Tiempo
+                        </label>
+                        <select id="timer-select"
+                            class="w-full bg-gray-800 rounded-lg p-2 text-white text-sm border border-gray-600 outline-none">
+                            <option value="180">3 Minutos</option>
+                            <option value="300" selected>5 Minutos</option>
+                            <option value="420">7 Minutos</option>
+                        </select>
+                    </div>
+                    <button onclick="set3PlayerMode()"
+                        class="bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/50 p-3 rounded-xl flex flex-col items-center justify-center text-indigo-300 transition active:scale-95">
+                        <i class="fas fa-bolt text-xl mb-1"></i>
+                        <span class="text-xs font-bold leading-none">Modo 3 Jug</span>
+                    </button>
+                </div>
+
+                <!-- Slider Probabilidad -->
+                <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600">
+                    <label class="block text-gray-300 mb-3 font-bold text-sm flex justify-between">
+                        <span><i class="fas fa-dice mr-1 text-purple-400"></i> Doble Impostor (5+ jug)</span>
+                        <span id="prob-val" class="text-blue-400">0%</span>
+                    </label>
+                    <input type="range" id="impostor-prob" min="0" max="100" value="0" step="10"
+                        oninput="document.getElementById('prob-val').innerText = this.value + '%'">
+                </div>
+
+                <!-- Toggle Pistas (POR DEFECTO DESACTIVADO) -->
+                <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 flex items-center justify-between">
+                    <label class="text-gray-300 font-bold text-sm flex items-center">
+                        <i class="fas fa-lightbulb mr-2 text-yellow-500"></i> Habilitar Pistas
+                    </label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="enable-hints" class="sr-only peer"> <!-- SIN CHECKED -->
+                        <div
+                            class="w-12 h-7 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500">
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Jugadores -->
+                <div>
+                    <label class="block text-gray-400 mb-2 font-bold text-sm uppercase tracking-wider ml-1">
+                        <i class="fas fa-users mr-1"></i> Jugadores
+                    </label>
+                    <div id="players-container" class="space-y-3 max-h-52 overflow-y-auto pr-1 mb-3">
+                        <!-- JS genera inputs aquí -->
+                    </div>
+
+                    <button onclick="addPlayerInput()"
+                        class="w-full py-3 rounded-xl border-2 border-dashed border-gray-600 text-gray-400 hover:text-white hover:border-gray-500 hover:bg-gray-700/50 transition font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle"></i> Agregar Jugador
+                    </button>
+                </div>
+
+                <div class="pt-2"></div>
+
+                <button onclick="startGame()"
+                    class="w-full bg-gradient-to-r from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-4 rounded-2xl transition btn-press shadow-lg shadow-blue-900/40 text-lg tracking-wide">
+                    ¡COMENZAR JUEGO!
+                </button>
+
+                <div class="text-center pt-2">
+                    <button onclick="showDictionaryAuth()"
+                        class="text-gray-500 hover:text-white text-xs font-semibold py-2 px-4 rounded transition">
+                        <i class="fas fa-lock mr-1"></i> Admin: Ver Palabras
+                    </button>
+                </div>
+            </div>
+
+            <!-- VISTA 2: ESPERA Y CARTA DESLIZANTE -->
+            <div id="view-wait"
+                class="hidden flex flex-col items-center justify-start h-full space-y-8 fade-in pt-8 pb-10 relative overflow-hidden">
+                <div class="text-center space-y-4 transition-all duration-300" id="wait-header">
+                    <div
+                        class="w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center border-4 border-yellow-500 shadow-xl shadow-yellow-500/20 animate-pulse mx-auto">
+                        <i class="fas fa-mobile-alt text-4xl text-yellow-100"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-gray-400 text-lg mb-1">Turno de</h2>
+                        <h1 id="wait-player-name" class="text-4xl font-black text-white tracking-tight leading-tight">
+                            NOMBRE</h1>
+                    </div>
+                </div>
+
+                <!-- Botón de confirmar (aparece después de ver) -->
+                <div id="next-player-area"
+                    class="opacity-0 pointer-events-none transition-all duration-500 transform translate-y-10 fixed bottom-48 z-10 w-full px-6 text-center">
+                    <p class="text-yellow-400 font-bold mb-2 text-sm animate-bounce">¿Ya viste tu rol?</p>
+                    <button onclick="confirmNextTurn()"
+                        class="w-full bg-blue-600 active:bg-blue-700 text-white font-bold py-4 rounded-2xl transition btn-press shadow-lg shadow-blue-900/40 text-lg flex items-center justify-center gap-2">
+                        <i class="fas fa-check-circle"></i> LISTO, SIGUIENTE
+                    </button>
+                    <p class="text-gray-500 text-[10px] mt-2">Pásale el celular al siguiente jugador</p>
+                </div>
+
+                <!-- CARTA DESLIZANTE -->
+                <div id="sliding-card"
+                    class="fixed bottom-0 left-0 w-full h-[85%] z-50 transform translate-y-[82%] transition-transform duration-300 ease-out touch-none">
+                    <!-- Pestaña / Handle -->
+                    <div id="card-handle"
+                        class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-t-[2.5rem] h-full shadow-[0_-15px_50px_rgba(0,0,0,0.8)] border-t border-white/10 relative flex flex-col items-center pt-3 cursor-pointer active:scale-[0.99] transition-transform">
+                        <!-- Indicador visual -->
+                        <div class="w-16 h-1.5 bg-gray-600/50 rounded-full mb-2"></div>
+                        <div class="flex flex-col items-center gap-2 mt-2" id="card-hint-text">
+                            <i class="fas fa-fingerprint text-3xl text-yellow-500 animate-pulse"></i>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.2em]">Mantén para ver</p>
+                            <i class="fas fa-chevron-up text-gray-600 animate-bounce mt-1"></i>
+                        </div>
+
+                        <!-- CONTENIDO SECRETO (Oculto inicialmente para efecto) -->
+                        <div id="card-secret-content"
+                            class="w-full h-full flex flex-col items-center justify-start pt-10 px-6 opacity-0 transition-opacity duration-200 pointer-events-none transform scale-95 origin-bottom">
+                            <!-- Inyectado por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 3: ELIMINADA (Fusionada con ESPERA) -->
+
+            <!-- VISTA 4: JUEGO -->
+            <div id="view-game" class="hidden text-center space-y-6 fade-in pt-4">
+                <div>
+                    <div
+                        class="inline-block px-4 py-1.5 bg-blue-900/40 rounded-full text-blue-300 text-xs font-bold border border-blue-800 mb-2">
+                        TEMA: <span id="game-theme" class="text-white ml-1">...</span>
+                    </div>
+                    <h2
+                        class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 drop-shadow-sm">
+                        ¡A DEBATIR!
+                    </h2>
+                </div>
+                <div class="bg-gray-700/30 p-5 rounded-2xl border border-gray-600">
+                    <h3 class="text-gray-400 text-xs uppercase mb-3 font-bold tracking-wider">Jugadores en Mesa</h3>
+                    <div id="game-players-list" class="flex flex-wrap gap-2 justify-center"></div>
+                </div>
+                <div class="py-4">
+                    <div id="timer" class="text-7xl font-mono font-bold text-yellow-500 drop-shadow-lg tabular-nums">
+                        05:00</div>
+                    <p class="text-xs text-gray-500 mt-2 uppercase tracking-widest font-bold">Tiempo Restante</p>
+                </div>
+                <div class="mt-auto">
+                    <button onclick="showResult()"
+                        class="w-full bg-red-600 active:bg-red-700 text-white font-bold py-4 rounded-2xl transition btn-press shadow-lg shadow-red-900/40 text-lg">
+                        🛑 TERMINAR Y REVELAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- VISTA: VOTACIÓN -->
+            <div id="view-vote" class="hidden text-center space-y-6 fade-in pt-4">
+                <h2 class="text-3xl font-black text-white mb-2">¿Quién es el Impostor?</h2>
+                <p class="text-gray-400 text-sm">Toquen a un jugador para revelar su identidad.</p>
+
+                <div id="vote-players-list" class="grid grid-cols-2 gap-3">
+                    <!-- Jugadores para votar -->
+                </div>
+
+                <div class="mt-4 p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                    <div class="flex justify-between text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                        <span>Marcador</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="text-green-500 flex flex-col">
+                            <span class="text-2xl font-black" id="score-citizens">0</span>
+                            <span class="text-[10px]">Ciudadanos</span>
+                        </div>
+                        <div class="text-gray-600 font-mono">- VS -</div>
+                        <div class="text-red-500 flex flex-col">
+                            <span class="text-2xl font-black" id="score-impostors">0</span>
+                            <span class="text-[10px]">Impostores</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 5: RESULTADOS -->
+            <div id="view-result" class="hidden text-center space-y-8 fade-in pt-8">
+                <h2 class="text-3xl font-black text-white mb-2">La Revelación</h2>
+                <div
+                    class="bg-gradient-to-b from-gray-800 to-gray-900 p-8 rounded-3xl border border-gray-600 shadow-2xl relative overflow-hidden">
+                    <div
+                        class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500">
+                    </div>
+                    <p class="text-gray-400 text-xs mb-4 uppercase tracking-widest font-bold">Los Impostores eran</p>
+                    <div id="result-impostors" class="space-y-2"></div>
+                </div>
+                <div class="bg-blue-900/20 p-6 rounded-2xl border border-blue-500/30 flex flex-col items-center">
+                    <p class="text-blue-300 text-xs uppercase mb-1 font-bold tracking-widest">La palabra secreta era</p>
+                    <p id="result-word" class="text-3xl font-black text-white tracking-wide">...</p>
+                </div>
+
+                <!-- Marcador Manual -->
+                <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+                    <p class="text-gray-500 text-xs uppercase font-bold mb-3">¿Quién ganó esta ronda?</p>
+                    <div class="flex gap-2">
+                        <button onclick="addScore('citizens')"
+                            class="flex-1 bg-green-900/40 border border-green-600/50 hover:bg-green-600 text-green-300 hover:text-white py-2 rounded-lg transition text-xs font-bold uppercase">
+                            😇 Ciudadanos
+                        </button>
+                        <button onclick="addScore('impostors')"
+                            class="flex-1 bg-red-900/40 border border-red-600/50 hover:bg-red-600 text-red-300 hover:text-white py-2 rounded-lg transition text-xs font-bold uppercase">
+                            🕵️‍♂️ Impostores
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 px-4">
+                        <span class="text-green-500 font-black text-xl" id="final-score-citizens">0</span>
+                        <span class="text-gray-600 text-xs">MARCADOR</span>
+                        <span class="text-red-500 font-black text-xl" id="final-score-impostors">0</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 mt-4">
+                    <button onclick="startGame()"
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-4 rounded-2xl transition btn-press shadow-lg shadow-blue-900/40 text-lg tracking-wide">
+                        🔄 MISMA CATEGORÍA
+                    </button>
+                    <button onclick="resetGame()"
+                        class="w-full bg-gray-700 active:bg-gray-600 text-gray-300 font-bold py-4 rounded-2xl transition btn-press shadow-lg text-lg">
+                        ⚙️ CAMBIAR CONFIGURACIÓN
+                    </button>
+                </div>
+            </div>
+
+            <!-- VISTA: AUTH DICCIONARIO -->
+            <div id="view-auth" class="hidden text-center space-y-6 pt-10 fade-in">
+                <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4"><i
+                        class="fas fa-lock text-3xl text-red-400"></i></div>
+                <h2 class="text-2xl font-bold text-white">Zona Protegida</h2>
+                <input type="password" id="admin-pass" placeholder="Clave"
+                    class="bg-gray-700 p-4 rounded-xl text-center text-white text-lg w-full border border-gray-600 focus:border-red-500 outline-none transition-colors">
+                <p id="auth-error" class="text-red-400 text-sm font-bold hidden bg-red-900/20 p-2 rounded">Clave
+                    Incorrecta</p>
+                <div class="space-y-3 pt-2">
+                    <button onclick="checkAuth()"
+                        class="w-full bg-red-600 active:bg-red-700 text-white font-bold py-4 rounded-xl transition btn-press">DESBLOQUEAR</button>
+                    <button onclick="showView('view-setup')"
+                        class="w-full py-3 text-gray-400 hover:text-white text-sm font-bold">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- VISTA: DICCIONARIO -->
+            <div id="view-dictionary" class="hidden space-y-4 fade-in h-full flex flex-col">
+                <div class="flex items-center justify-between shrink-0 mb-2">
+                    <h2 class="text-xl font-bold text-white">📚 Diccionario</h2>
+                    <button onclick="showView('view-setup')"
+                        class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition font-bold"><i
+                            class="fas fa-arrow-left mr-1"></i> Volver</button>
+                </div>
+                <div id="dict-content" class="space-y-4 overflow-y-auto pr-1 grow pb-4"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CARGAMOS EL ARCHIVO EXTERNO DE PALABRAS -->
+    <script src="words.js"></script>
+
+    <!-- JAVASCRIPT LÓGICA -->
+    <script>
+        // --- PRESETS DE SONIDO (Web Audio API) ---
+        const SoundGen = {
+            ctx: null,
+            init: function () {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+            },
+            playTone: function (freq, type, duration, vol = 0.1) {
+                if (!this.ctx) this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            click: function () { this.playTone(600, 'sine', 0.1, 0.05); },
+            tick: function () { this.playTone(800, 'square', 0.05, 0.03); },
+            alert: function () {
+                if (!this.ctx) this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.friendly = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(now + 0.3);
+            },
+            revealBad: function () {
+                if (!this.ctx) this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(now + 1);
+            },
+            revealGood: function () {
+                this.playTone(400, 'sine', 0.1, 0.1);
+                setTimeout(() => this.playTone(600, 'sine', 0.2, 0.1), 100);
+            }
+        };
+
+        // --- ESTADO DEL JUEGO ---
+        let state = {
+            players: [], category: "", secretWord: "", secretHint: "",
+            impostorIndices: [], currentTurnIdx: 0, enableHints: false,
+            scores: { citizens: 0, impostors: 0 }
+        };
+        let timerInterval;
+
+        // --- INICIALIZACIÓN ---
+        window.onload = function () {
+            // Inicializar Audio Context al primer toque
+            document.body.addEventListener('click', () => { if (!SoundGen.ctx) SoundGen.init(); }, { once: true });
+
+            // Verificar si words.js cargó correctamente
+            if (typeof DATA_ECUADOR === 'undefined') {
+                alert("ERROR: No se encontró el archivo words.js.");
+            } else {
+                loadCachedPlayers();
+                updateCategories();
+            }
+        };
+
+        function showView(viewId) {
+            document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        // --- GESTIÓN DE JUGADORES ---
+        function addPlayerInput(value = "") {
+            const container = document.getElementById('players-container');
+            const count = container.children.length + 1;
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center fade-in';
+            div.innerHTML = `
+                <div class="bg-gray-700 rounded-lg p-1 flex items-center w-full border border-gray-600 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+                    <div class="pl-3 text-gray-400"><i class="fas fa-user"></i></div>
+                    <input type="text" class="player-input w-full bg-transparent p-3 text-white outline-none text-base font-medium placeholder-gray-500" 
+                           placeholder="Jugador ${count}" value="${value}">
+                </div>
+                <button onclick="removePlayer(this)" class="bg-gray-700 text-red-400 hover:text-red-300 hover:bg-gray-600 h-12 w-12 rounded-lg transition flex items-center justify-center shrink-0 border border-gray-600">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+            setTimeout(() => { container.scrollTop = container.scrollHeight; }, 10);
+        }
+
+        function removePlayer(btn) {
+            const container = document.getElementById('players-container');
+            if (container.children.length <= 3) return alert("Se necesitan al menos 3 jugadores.");
+            btn.parentElement.remove();
+            Array.from(container.children).forEach((div, idx) => {
+                div.querySelector('input').placeholder = `Jugador ${idx + 1}`;
+            });
+        }
+
+        function loadCachedPlayers() {
+            const cached = JSON.parse(localStorage.getItem('impostor_players') || '[]');
+            const container = document.getElementById('players-container');
+            container.innerHTML = '';
+            if (cached.length > 0) cached.forEach(name => addPlayerInput(name));
+            else { addPlayerInput(); addPlayerInput(); addPlayerInput(); }
+        }
+
+        function updateCategories() {
+            const mode = document.querySelector('input[name="game_mode"]:checked').value;
+            const select = document.getElementById('category-select');
+            select.innerHTML = '';
+            const data = (mode === 'ecu') ? DATA_ECUADOR : DATA_NORMAL;
+            Object.keys(data).forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat; opt.innerText = cat; select.appendChild(opt);
+            });
+            // Opción Palabra Propia
+            const optCustom = document.createElement('option');
+            optCustom.value = "CUSTOM"; optCustom.innerText = "✍️ Escribir Palabra Propia...";
+            optCustom.className = "text-yellow-400 font-bold";
+            select.appendChild(optCustom);
+        }
+
+        // --- LÓGICA DEL JUEGO ---
+        function set3PlayerMode() {
+            SoundGen.click();
+            // Asegurar 3 inputs
+            const container = document.getElementById('players-container');
+            container.innerHTML = '';
+            addPlayerInput(); addPlayerInput(); addPlayerInput();
+
+            // Configurar opciones
+            document.getElementById('timer-select').value = "180"; // 3 mins
+            document.getElementById('enable-hints').checked = false; // Sin pistas
+
+            // Animación feedback
+            const btn = event.currentTarget;
+            btn.classList.add('ring-2', 'ring-indigo-400');
+            setTimeout(() => btn.classList.remove('ring-2', 'ring-indigo-400'), 300);
+        }
+
+        async function startGame() {
+            SoundGen.click();
+            const inputs = document.querySelectorAll('.player-input');
+            const players = [];
+            inputs.forEach((inp, idx) => {
+                const val = inp.value.trim();
+                players.push(val ? val : `Jugador ${idx + 1}`);
+            });
+
+            if (players.length < 3) return alert("Mínimo 3 jugadores.");
+
+            localStorage.setItem('impostor_players', JSON.stringify(players));
+            state.players = players;
+            state.category = document.getElementById('category-select').value;
+            state.enableHints = document.getElementById('enable-hints').checked;
+            const probDouble = parseInt(document.getElementById('impostor-prob').value);
+            const mode = document.querySelector('input[name="game_mode"]:checked').value;
+
+            // Selección Palabra
+            state.category = document.getElementById('category-select').value;
+
+            if (state.category === "CUSTOM") {
+                const userWord = prompt("SECRET: Escribe la palabra secreta (nadie debe ver):");
+                if (!userWord) return;
+                const userHint = prompt("SECRET: Escribe una pista corta:");
+                state.secretWord = userWord;
+                state.secretHint = userHint || "Sin pista";
+            } else {
+                const data = (mode === 'ecu') ? DATA_ECUADOR : DATA_NORMAL;
+                const list = data[state.category] || [["Error", "Sin datos"]];
+                const choice = list[Math.floor(Math.random() * list.length)];
+                state.secretWord = choice[0];
+                state.secretHint = choice[1];
+            }
+
+            // Asignar Impostores
+            let numImpostors = 1;
+            if (players.length >= 5 && Math.random() * 100 <= probDouble) numImpostors = 2;
+            const indices = new Set();
+            while (indices.size < numImpostors) indices.add(Math.floor(Math.random() * players.length));
+            state.impostorIndices = Array.from(indices);
+            state.currentTurnIdx = 0;
+
+            updateWaitScreen();
+            showView('view-wait');
+        }
+
+
+
+        function updateWaitScreen() {
+            // 1. Reset UI
+            const card = document.getElementById('sliding-card');
+            const content = document.getElementById('card-secret-content');
+            const hint = document.getElementById('card-hint-text');
+            const btnArea = document.getElementById('next-player-area');
+            const header = document.getElementById('wait-header');
+
+            card.classList.remove('translate-y-0');
+            card.classList.add('translate-y-[82%]');
+            content.classList.remove('opacity-100', 'scale-100');
+            content.classList.add('opacity-0', 'scale-95');
+            hint.classList.remove('opacity-0');
+            btnArea.classList.add('opacity-0', 'pointer-events-none');
+            header.classList.remove('opacity-0');
+
+            // 2. Info Jugador
+            document.getElementById('wait-player-name').innerText = state.players[state.currentTurnIdx];
+
+            // 3. Preparar Carta (Contenido Secreto)
+            const playerIdx = state.currentTurnIdx;
+            const isImpostor = state.impostorIndices.includes(playerIdx);
+
+            let html = '';
+            if (isImpostor) {
+                // Diseño Impostor
+                card.querySelector('#card-handle').className = "bg-gradient-to-b from-gray-900 via-gray-950 to-black rounded-t-[2.5rem] h-full shadow-2xl border-t-2 border-gray-700 relative flex flex-col items-center pt-3 cursor-pointer";
+                html = `
+                    <div class="w-full h-full flex flex-col items-center justify-start px-2 pt-0 pb-2 animate-in fade-in zoom-in duration-300">
+                        <div class="w-full h-full border-[6px] border-red-600 rounded-[2rem] p-4 flex flex-col items-center justify-between shadow-2xl relative overflow-hidden pb-8 backdrop-blur-sm -mt-2">
+                            
+                            <i class="fas fa-mask text-7xl text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.9)] animate-pulse mt-2 z-10"></i>
+                            
+                            <div class="flex flex-col items-center gap-1 z-10 w-full">
+                                <h2 class="text-5xl font-black text-white uppercase tracking-tighter drop-shadow-2xl scale-110 leading-none">IMPOSTOR</h2>
+                                <div class="w-16 h-1 bg-red-500 rounded-full"></div>
+                            </div>
+                            
+                            <div class="z-10 space-y-2 text-center">
+                                <p class="text-white font-black text-xl uppercase tracking-widest drop-shadow-md">¡Tu misión!</p>
+                                <p class="text-red-300 text-base leading-snug font-medium">Finge saber la palabra y no dejes que te descubran.</p>
+                            </div>
+                `;
+                if (state.enableHints) {
+                    html += `
+                            <div class="w-full bg-black/40 p-2 rounded-xl border border-red-500/30 z-10">
+                                 <p class="text-[10px] text-yellow-400 font-mono uppercase tracking-widest text-center">Pista: ${state.secretHint}</p>
+                            </div>
+                    `;
+                }
+                html += `   </div>
+                        </div>`;
+            } else {
+                // Diseño Ciudadano
+                card.querySelector('#card-handle').className = "bg-gradient-to-b from-gray-900 via-gray-950 to-black rounded-t-[2.5rem] h-full shadow-2xl border-t-2 border-gray-700 relative flex flex-col items-center pt-3 cursor-pointer";
+                html = `
+                    <div class="w-full h-full flex flex-col items-center justify-start px-2 pt-0 pb-2 animate-in fade-in zoom-in duration-300">
+                        <div class="w-full flex-grow border-[6px] border-green-500 rounded-[2rem] p-4 flex flex-col items-center justify-center gap-4 shadow-2xl relative overflow-hidden backdrop-blur-sm -mt-2">
+                            <i class="fas fa-user-check text-7xl text-green-500 mb-2 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)]"></i>
+                            <h2 class="text-3xl font-black text-green-400 uppercase tracking-wide">Ciudadano</h2>
+                            
+                            <div class="w-full bg-black/40 p-4 rounded-2xl border border-green-500/30 text-center">
+                               <p class="text-[10px] text-gray-400 uppercase tracking-[0.3em] mb-1 font-bold">Palabra Secreta</p>
+                               <p class="text-4xl font-black text-white tracking-wide break-words leading-none drop-shadow-md">${state.secretWord}</p>
+                            </div>
+                            
+                            <p class="text-green-500/50 text-[10px] font-mono uppercase">Memorízala bien</p>
+                        </div>
+                    </div>
+                `;
+            }
+            content.innerHTML = html;
+            // 4. Bind Events (Touch/Mouse)
+            setupCardEvents(card, content, hint, header, btnArea, isImpostor);
+        }
+
+        function setupCardEvents(card, content, hint, header, btnArea, isImpostor) {
+            const handle = document.getElementById('card-handle');
+            let startY = 0;
+            let isDragging = false;
+            let currentTranslate = 75;
+            let isOpen = false;
+            let revealedOnce = false;
+
+            // Optimización GPU
+            card.style.willChange = 'transform';
+
+            // Reset inicial visual
+            card.style.transform = `translate3d(0, ${currentTranslate}%, 0)`;
+            content.style.opacity = '0';
+
+            let lastY = 0;
+            let rafId = null;
+
+            const handleStart = (y) => {
+                if (isOpen) return;
+                isDragging = true;
+                startY = y;
+                lastY = y;
+
+                // Sin transición para respuesta inmediata 1:1
+                card.style.transition = 'none';
+                content.style.transition = 'none';
+                hint.style.opacity = '0';
+
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+            };
+
+            // Loop de animación 60fps
+            const updatePosition = () => {
+                if (!isDragging) return;
+
+                const deltaY = lastY - startY;
+                const screenHeight = window.innerHeight;
+                const deltaPercent = (deltaY / screenHeight) * 100;
+
+                let newTranslate = 80 + deltaPercent;
+                newTranslate = Math.max(0, Math.min(90, newTranslate));
+
+                card.style.transform = `translate3d(0, ${newTranslate}%, 0)`;
+
+                let opacity = 1 - (newTranslate / 70);
+                opacity = Math.max(0, Math.min(1, opacity));
+                content.style.opacity = opacity;
+
+                rafId = requestAnimationFrame(updatePosition);
+            };
+
+            const handleMove = (y, e) => {
+                if (!isDragging) return;
+                if (e.cancelable) e.preventDefault();
+
+                lastY = y;
+
+                if (!rafId) {
+                    rafId = requestAnimationFrame(updatePosition);
+                }
+            };
+
+            const handleEnd = (y) => {
+                if (!isDragging) return;
+                isDragging = false;
+
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+
+                card.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                content.style.transition = 'opacity 0.4s ease';
+
+                const deltaY = y - startY;
+                const revealThreshold = -120;
+
+                if (deltaY < revealThreshold) {
+                    if (!revealedOnce) {
+                        isImpostor ? SoundGen.revealGood() : SoundGen.revealGood();
+                        revealedOnce = true;
+
+                        setTimeout(() => {
+                            btnArea.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-10');
+                            btnArea.classList.add('translate-y-0');
+                        }, 300);
+                    }
+                }
+                closeCard();
+            };
+
+            function closeCard() {
+                card.style.transform = `translate3d(0, ${currentTranslate}%, 0)`;
+                content.style.opacity = '0';
+                content.classList.add('scale-95');
+                header.style.opacity = '1';
+                hint.style.opacity = '1';
+            }
+
+            // LISTENERS
+            handle.addEventListener('touchstart', (e) => handleStart(e.touches[0].clientY), { passive: false });
+            handle.addEventListener('mousedown', (e) => handleStart(e.clientY));
+
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging) handleMove(e.touches[0].clientY, e);
+            }, { passive: false });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) handleMove(e.clientY, e);
+            });
+
+            document.addEventListener('touchend', (e) => handleEnd(e.changedTouches[0].clientY));
+            document.addEventListener('mouseup', (e) => handleEnd(e.clientY));
+
+            // Toggle con click simple
+            let clickStartTime;
+            handle.addEventListener('mousedown', () => clickStartTime = Date.now());
+            handle.addEventListener('touchstart', () => clickStartTime = Date.now(), { passive: false });
+
+            handle.addEventListener('click', (e) => {
+                const duration = Date.now() - clickStartTime;
+                if (duration < 200 && !isDragging) {
+                    if (isOpen) closeCard();
+                }
+            });
+        }
+
+        function confirmNextTurn() {
+            // Limpiar eventos globales antiguos para evitar bugs
+            document.onmouseup = null;
+            document.ontouchend = null;
+
+            state.currentTurnIdx++;
+            if (state.currentTurnIdx >= state.players.length) {
+                startGamePhase();
+            } else {
+                updateWaitScreen();
+            }
+        }
+
+        function startGamePhase() {
+            SoundGen.alert();
+            document.getElementById('game-theme').innerText = (state.category === 'CUSTOM') ? 'Palabra Secreta' : state.category;
+            const list = document.getElementById('game-players-list');
+            list.innerHTML = state.players.map(p =>
+                `<span class="bg-gray-800 px-3 py-1.5 rounded-lg text-sm text-gray-300 border border-gray-600 shadow-sm flex items-center gap-2"><i class="fas fa-user text-xs text-gray-500"></i> ${p}</span>`
+            ).join('');
+
+            let timeLeft = parseInt(document.getElementById('timer-select').value);
+            const timerEl = document.getElementById('timer');
+            clearInterval(timerInterval);
+            timerEl.className = "text-7xl font-mono font-bold text-yellow-500 drop-shadow-lg tabular-nums";
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) return clearInterval(timerInterval);
+                timeLeft--;
+                if (timeLeft <= 10) SoundGen.tick();
+                const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                timerEl.innerText = `${m}:${s} `;
+                if (timeLeft < 60) timerEl.className = "text-7xl font-mono font-bold text-red-500 drop-shadow-lg tabular-nums animate-pulse";
+            }, 1000);
+            showView('view-game');
+        }
+
+        function startVotingPhase() {
+            SoundGen.alert();
+            clearInterval(timerInterval);
+            const container = document.getElementById('vote-players-list');
+            container.innerHTML = state.players.map((p, idx) => `
+                    <button onclick="revealRole(${idx})" class="bg-gray-700 hover:bg-gray-600 p-4 rounded-xl border-2 border-gray-600 flex flex-col items-center gap-2 transition active:scale-95">
+                    <i class="fas fa-question-circle text-3xl text-gray-400"></i>
+                    <span class="font-bold text-white">${p}</span>
+                </button>
+                    `).join('');
+
+            // Actualizar marcador visual
+            document.getElementById('score-citizens').innerText = state.scores.citizens;
+            document.getElementById('score-impostors').innerText = state.scores.impostors;
+
+            showView('view-vote');
+        }
+
+        function revealRole(idx) {
+            const isImpostor = state.impostorIndices.includes(idx);
+            if (isImpostor) {
+                SoundGen.revealBad();
+                alert(`¡${state.players[idx]} ERA EL IMPOSTOR! 🕵️‍♂️💀`);
+                state.scores.citizens++;
+            } else {
+                SoundGen.revealGood();
+                alert(`¡${state.players[idx]} es inocente! 😇`);
+                // Si revelas un inocente, ¿ganan los impostores? 
+                // Simplifiquemos: Mostramos el rol y seguimos o vamos a resultados finales
+                const confirmEnd = confirm("Es inocente... ¿Quieren terminar el juego y ver quién era?");
+                if (!confirmEnd) return;
+                state.scores.impostors++;
+            }
+            showResult();
+        }
+
+        function showResult() {
+            SoundGen.revealBad(); // Sonido de revelación
+            clearInterval(timerInterval);
+            const impNames = state.impostorIndices.map(i => state.players[i]);
+            document.getElementById('result-impostors').innerHTML = impNames.map(name => `<div class="text-4xl font-black text-red-500 drop-shadow-md animate-bounce">${name}</div>`).join('');
+            document.getElementById('result-word').innerText = state.secretWord;
+
+            // Actualizar vista de marcador
+            updateFinalScoreUI();
+
+            showView('view-result');
+        }
+
+        function addScore(team) {
+            state.scores[team]++;
+            SoundGen.click();
+            updateFinalScoreUI();
+        }
+
+        function updateFinalScoreUI() {
+            document.getElementById('final-score-citizens').innerText = state.scores.citizens;
+            document.getElementById('final-score-impostors').innerText = state.scores.impostors;
+        }
+
+        function resetGame() { SoundGen.click(); clearInterval(timerInterval); showView('view-setup'); }
+
+        // --- ADMIN ---
+        function showDictionaryAuth() { document.getElementById('admin-pass').value = ''; document.getElementById('auth-error').classList.add('hidden'); showView('view-auth'); }
+        function checkAuth() {
+            if (document.getElementById('admin-pass').value === ADMIN_PASS) { renderDictionary(); showView('view-dictionary'); }
+            else document.getElementById('auth-error').classList.remove('hidden');
+        }
+        function renderDictionary() {
+            const container = document.getElementById('dict-content');
+            container.innerHTML = '';
+            const renderSection = (title, data, colorClass) => {
+                let html = `<div class="mb-6"><h3 class="${colorClass} text-lg font-black mb-3 border-b border-gray-700 pb-1 sticky top-0 bg-gray-800 pt-2 z-10">${title}</h3><div class="space-y-4">`;
+                for (const [cat, words] of Object.entries(data)) {
+                    html += `<div class="bg-gray-700/40 rounded-xl p-4 border border-gray-600/50"><h4 class="text-blue-300 font-bold text-sm mb-3 uppercase tracking-wide">${cat}</h4><div class="flex flex-wrap gap-2">`;
+                    words.forEach(([w, h]) => { html += `<div class="text-xs bg-gray-800 px-3 py-2 rounded-lg text-gray-300 border border-gray-600 flex flex-col gap-0.5 shadow-sm w-[calc(50%-0.25rem)]" title="${h}"><span class="font-bold text-white text-sm truncate">${w}</span><span class="text-gray-500 italic text-[10px] leading-tight truncate">${h}</span></div>`; });
+                    html += `</div></div>`;
+                }
+                html += `</div></div>`;
+                return html;
+            };
+            container.innerHTML += renderSection("🇪🇨 Modo Ecuador", DATA_ECUADOR, "text-yellow-500");
+            container.innerHTML += renderSection("🌎 Modo Normal", DATA_NORMAL, "text-blue-500");
+        }
+    </script>
+</body>
+
+</html>
